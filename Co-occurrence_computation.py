@@ -1,10 +1,10 @@
+import pandas as pd
+from glob import glob
 import itertools 
 import time
 from pyspark import SparkContext
-import dbutils
 
-sc = SparkContext.getOrCreate()
- 
+sc = SparkContext("local", "First App").getOrCreate()
 
 def parseLine(tree, tree_number):
     """This function responsibles of parse the lines according to ,
@@ -151,8 +151,10 @@ def main(list_paths, datasets_names_list, output1, output2):
         s = s.replace("(", "")
         s = s.replace(")", "")
         
-        dbutils.fs.put(output1 +dataset_name + ".gw", gw_begin +s_gw )
-        dbutils.fs.put(output2 +dataset_name + ".in", s_with_count + s)
+        with open(output1 + dataset_name + ".gw", "w") as f:
+            f.write(gw_begin + s_gw)
+        with open(output2 + dataset_name + ".in", "w") as f:
+            f.write(s_with_count + s)
         del data
         
         # The output files are required later by the graphlet correlation distance method
@@ -165,3 +167,8 @@ def main(list_paths, datasets_names_list, output1, output2):
           #The following e lines describe undirected edges with space-separated ids of their endpoints. 
           #Node ids should be between 0 and n-1 (see example.in).
         
+
+if __name__ == "__main__":
+    paths = glob("datasets-classified/*.csv")
+    names = [path.replace("datasets-classified/", "").replace(".csv", "") for path in paths]
+    main(paths, names, "output1", "output2")
