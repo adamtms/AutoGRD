@@ -1,4 +1,11 @@
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import StandardScaler
 
+def PreProcessing(X):
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    return X_scaled
 
 def CreateClassifications(path,dataSet_name, output_path ):
     """Gets a dataset, and uses random forest to classify the instances. 
@@ -30,7 +37,7 @@ def CreateClassifications(path,dataSet_name, output_path ):
 
     
     clf = RandomForestClassifier(max_depth=8, random_state=0, n_estimators=500)
-     clf.fit(X, Y)
+    clf.fit(X, Y)
     # For regression datasets, one sholud use RandomForestRegressor instead of RandomForestClassifier
     # from sklearn.ensemble import RandomForestRegressor
     # clf = RandomForestRegressor(max_depth=8, random_state=0, n_estimators=500)

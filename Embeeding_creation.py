@@ -458,30 +458,25 @@ def getGraphletDists(allIndexes, mode):
 	
 	return grCounts
 
-# # Compute the RGF distance among two signatures
-# def computeRGFDist(signs1, signs2):
-# 	# Compute the distance
-# 	T1 = sum(signs1)
-# 	T2 = sum(signs2)
-#
-# 	if T1 == 1:
-# 		T1 = 1.0000000001
-# 	if T2 == 1:
-# 		T2 = 1.0000000001
-# 		signs1[i] = (-1 * math.log(signs1[i])) / math.log(T1)
-#
-# 	for i in range(len(signs1)):
-# 		if signs2[i] != 0:
-#
-# 	for i in range(len(signs1)):
-# 		if signs1[i] != 0:
-# 			signs2[i] = (-1 * math.log(signs2[i])) / math.log(T2)
-#
-# 	distance = 0
-# 	for i in range(29):
-# 		distance += abs(signs1[i] - signs2[i])
-#
-# 	return distance
+
+def computeRGFDist(signs1, signs2):
+	# Compute the distance
+	T1 = sum(signs1)
+	T2 = sum(signs2)
+	if T1 == 1:
+		T1 = 1.0000000001
+	if T2 == 1:
+		T2 = 1.0000000001
+		signs1[i] = (-1 * math.log(signs1[i])) / math.log(T1)
+	for i in range(len(signs1)):
+		if signs2[i] != 0:
+			for i in range(len(signs1)):
+				if signs1[i] != 0:
+					signs2[i] = (-1 * math.log(signs2[i])) / math.log(T2)
+	distance = 0
+	for i in range(29):
+		distance += abs(signs1[i] - signs2[i])
+	return distance
 
 # Reads the previously saved graphlet degree distribution files
 def readDist(fileName):
