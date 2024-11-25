@@ -4,12 +4,15 @@
 import os
 from glob import glob
 
+from decorify import timeit
+
 from RandomForestclassification import CreateClassifications
 from Cooccurrence_computation import main as cooccurrence_computation
 from Orca_algorithm import OperateOrca
 from Embeeding_creation import getCorrelationMatrices, computeCorrelDist
+from rank import main as rank
 from utils import YamlWriter
-from decorify import timeit
+
 
 CreateClassifications = timeit(CreateClassifications)
 cooccurrence_computation = timeit(cooccurrence_computation)
@@ -17,7 +20,7 @@ OperateOrca = timeit(OperateOrca)
 getCorrelationMatrices = timeit(getCorrelationMatrices)
 computeCorrelDist = timeit(computeCorrelDist)
 
-if __name__ == "__main__":
+def main(seed=0):
     # create folders
     for folder in ["trees", "in_files", "orca", "in_files", "embedding"]:
         os.makedirs(folder, exist_ok=True)
@@ -59,3 +62,9 @@ if __name__ == "__main__":
             writer.add_partial_result(path.split("/")[-1], time_1 + time_2)
         writer.decrease_indent()
             
+        # rank families
+        rank()
+
+
+if __name__ == "__main__":
+    main()
