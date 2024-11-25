@@ -130,8 +130,7 @@ class BaseExperiment(abc.ABC):
             task = Task.UNKNOWN
             if num_classes == 2:
                 task = Task.BINARY
-            elif 2 < num_classes < 50:
-                # realistically it would be more of regression then
+            else:
                 task = Task.MULTICLASS
             if dataset is None:
                 logging.warning(f"Dataset {dataset_name} not found")
@@ -148,11 +147,11 @@ class BaseExperiment(abc.ABC):
                 
 
     def _get_parameters(self):
-        return pd.read_csv("data/parameters.csv")
+        return pd.read_csv("parameters.csv")
     
     def __get_dataset(self, name: str):
-        csv_path = f"datasets/AutoIRAD-datasets/*{name}*.csv"
-        dat_path = f"datasets/AutoIRAD-datasets/*{name}*.dat"
+        csv_path = f"datasets/*{name}*.csv"
+        dat_path = f"datasets/*{name}*.dat"
         found_csv = list(glob(csv_path))
         found_dat = list(glob(dat_path))
         if not found_csv and not found_dat:
