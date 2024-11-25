@@ -135,7 +135,12 @@ class BaseExperiment(abc.ABC):
             if dataset is None:
                 logging.warning(f"Dataset {dataset_name} not found")
                 continue
-            ranked_families = self.rank_families(dataset, dataset_name, task, seed, duration)
+            try:
+                ranked_families = self.rank_families(dataset, dataset_name, task, seed, duration)
+            except Exception as e:
+                logging.error(f"Error while processing dataset {dataset_name}")
+                logging.error(e)
+                ranked_families = None
             if ranked_families is None:
                 self.writer.add_partial_result(dataset_name, [])
                 continue
