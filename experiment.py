@@ -53,7 +53,7 @@ class AutoGRDExeriment(BaseExperiment):
         writer.increase_indent("RandomForest")
         datasets = sorted(glob("datasets/*.*"))
         for dataset in datasets:
-            _, time = CreateClassifications(dataset, dataset.replace(".dat", ".csv").replace("datasets", "trees"))
+            _, time = CreateClassifications(dataset, dataset.replace(".dat", ".csv").replace("datasets", "trees"), seed)
             writer.add_partial_result(dataset.split("/")[-1].split(".")[0], time)
         writer.decrease_indent()
 

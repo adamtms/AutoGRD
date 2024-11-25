@@ -18,7 +18,7 @@ def PreProcessing(X):
     X_processed = preprocessor.fit_transform(X)
     return X_processed
 
-def CreateClassifications(path: str, output_path):
+def CreateClassifications(path: str, output_path, seed=0):
     """Gets a dataset, and uses random forest to classify the instances. 
        Then, each instance is associated with some leaf. 
        These associations are written to file, which its location is output_path.
@@ -50,7 +50,7 @@ def CreateClassifications(path: str, output_path):
     X = PreProcessing(X)
 
     
-    clf = RandomForestClassifier(max_depth=8, random_state=0, n_estimators=500)
+    clf = RandomForestClassifier(max_depth=8, random_state=0, n_estimators=500, random_state=seed)
     clf.fit(X, Y)
     # For regression datasets, one sholud use RandomForestRegressor instead of RandomForestClassifier
     # from sklearn.ensemble import RandomForestRegressor
