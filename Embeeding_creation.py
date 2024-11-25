@@ -162,7 +162,6 @@ class MatrixReader(multiprocessing.Process):
 			# Get a task
 			try:
 				ndumpName = self.work_queue.get_nowait()
-				
 				signatures = readSignatures('{0}.in.ndump2'.format(ndumpName))
 				formatted = formatSignatures(signatures, self.testMode)				
 				correlMat = computeCorrelMat(formatted)
@@ -249,66 +248,14 @@ class correlDistanceComputer(multiprocessing.Process):
 				pass
 
 
-# Given a matrix, writes the matrix with the network names into the output file
-def saveDistanceMatrix(matrix, networkNames, outputFile):
-	fWrite = open(outputFile, 'w')
-	
-	# Write the names of the networks
-	toWrite = '\t'
-	for name in networkNames:
-		toWrite += name + '\t'
-	fWrite.write(toWrite.rstrip() + '\n')
-	
-	# Write the distances among networks
-	l = list(networkNames)
-	for i in range(len(l)):
-
-		toWrite = l[i] + '\t'
-		for val in matrix[i]:
-			toWrite += str(val) + '\t'
-		fWrite.write(toWrite.rstrip() + '\n')
-	
-	fWrite.close()
-
 # The function to compute all the distances between the provided correlation matrices in parallel
 def computeCorrelDist(corrMats, outputName, from_folder, to_path):
 	# Start the processes
-	pair_queue = multiprocessing.Queue()
-	result_queue = multiprocessing.Queue()
-	processList = []
-	
-	for i in range(num_processes):
-		computer = correlDistanceComputer(pair_queue, result_queue)
-		computer.start()
-		processList.append(computer)
-	
-	# Put the jobs to be consumed
-	totalJobCount = len(corrMats) * (len(corrMats) - 1) / 2
 	counter = 0
 	for key, value in corrMats.items():
 		numpy.savetxt(key.replace("orca", "embedding") + ".csv", value, delimiter=",")
 		counter = counter + 1
-	pairCount = 0
-	return
-	
-	# Consume the results of completed computation
-	distances = [[0] * len(corrMats) for i in range(len(corrMats))]
-	
-	computedCount = 0
-	while computedCount < pairCount:
-		try:
-			results = result_queue.get_nowait()
-			distances[results[0]][results[1]] = results[2] 
-			distances[results[1]][results[0]] = results[2]
-			computedCount += 1
-		except queue.Empty:
-			time.sleep(1)
-		
-	for proc in processList:
-		proc.terminate()
-	
-	# Save the results in the output file
-	saveDistanceMatrix(distances, matList, outputName)
+
 
 # Function to compute the graphlet counts from ndump2 files
 def getGraphletFreq(signList):
@@ -1219,7 +1166,3 @@ def main(from_folder, to_path):
 		diameters = computeNetworkProperties(allIndexes, 6)
 		print ('Diameters ready! Computing the distances...')
 		compareNetworkProps(diameters, 2, os.path.join(ndumpFolder, 'diameter.txt'))
-
-
-if __name__ == "__main__":
-	main('./orca/', "./embedding/")
