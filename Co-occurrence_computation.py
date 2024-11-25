@@ -1,10 +1,9 @@
+from collections import Counter
 import pandas as pd
 from glob import glob
 import itertools 
 import time
-from pyspark import SparkContext
 
-sc = SparkContext("local", "First App").getOrCreate()
 
 def parseLine(tree, tree_number):
     """This function responsibles of parse the lines according to ,
@@ -43,9 +42,8 @@ def combinations(row):
     list
          list of edges (pairs of instances)
     """
-    l = sorted(row[1])
-    k = row[0][1]
-    return [(v) for v in itertools.combinations(l, 2)]
+    l = sorted(row)
+    return itertools.combinations(l, 2)
   
   
 def addToEdge(edge):
@@ -65,6 +63,12 @@ def addToEdge(edge):
     e = e.replace("(" ,"")
     e = e.replace(")", "")
     return e + " 0 |{}|"
+
+
+def flatten(inp):
+    for i in inp:
+        for j in i:
+            yield j       
 
 
 def main(list_paths, datasets_names_list, output1, output2):
@@ -96,52 +100,59 @@ def main(list_paths, datasets_names_list, output1, output2):
     
   
     for path in list_paths:
+        print(path)
       
         dataset_name = dataset_names_dic[counter_data_set]
         counter_data_set = counter_data_set +1
         
         # Load and parse data file into an RDD of LabeledPoint
-        data = sc.textFile(path)
+        with open(path) as f:
+            data = f.readlines()
         temp = []
         counter = 1
 
-        for i in data.collect():
+        for i in data:
           instances_number = len(i.split(",")) # Find the instances number 
           temp.append((i , counter))  # Add line number for each line
           counter = counter +1
 
-        data = sc.parallelize(temp)
+        data = temp
 
+        a = flatten(map(lambda tp :parseLine(tp[0],tp[1]), data))
+        temp_a = {}
+        for group, values in a:
+            if group in temp_a:
+                temp_a[group].append(values)
+            else:
+                temp_a[group] = [values]
 
-        a = data.flatMap(lambda tp :parseLine(tp[0],tp[1])).groupByKey().map(lambda x : (x[0], list(x[1]))).collect() # return : <number of tree , leaf number value: list of instances>
+        a = temp_a
 
-
-        a = sc.parallelize(a)
-
-        selected_edge = a.map(lambda x: combinations(x)).flatMap(lambda x: x).map(lambda x: (x,1)).reduceByKey(lambda tp1, tp2 : tp1+tp2).sortBy(lambda a: -a[1])
-        edges_amount_before_filter = len(selected_edge.collect())
+        selected_edge = Counter(flatten(map(lambda x: combinations(x), a.values()))).items()
+        del temp_a
+        selected_edge = sorted(selected_edge, key=lambda x: -x[1])
+        edges_amount_before_filter = len(list(selected_edge))
         precentage = 0.9
         wish_number_of_edges = edges_amount_before_filter*precentage
 
-        d = sc.parallelize(selected_edge.take(int(wish_number_of_edges)))
-        d = d.map(lambda x: x[0])
+        d = selected_edge[: int(wish_number_of_edges)]
+        d = [x[0] for x in d]
 
         gw_begin =""
         for i in range(0, instances_number): 
           gw_begin = gw_begin + "|{}|" +"\n" # Save according to 
-        edge_gw = d.map(lambda edge : addToEdge(edge))
+        edge_gw = [addToEdge(edge) for edge in d]
 
-        s_gw = str(edge_gw.collect())
+        s_gw = str(list(edge_gw))
         s_gw = s_gw.replace(" '" , "")
         s_gw = s_gw.replace("'" , "")
         s_gw = s_gw.replace("," , "\n")
         s_gw = s_gw.replace("[","")
         s_gw = s_gw.replace("]","")
-        print("s_gw")
       
-        s_with_count = "" + str(instances_number) + " " + str(len(d.collect()))+"\n" # string that save edges list with the number of appearence
+        s_with_count = "" + str(instances_number) + " " + str(len(list(d)))+"\n" # string that save edges list with the number of appearence
 
-        s = str(d.collect())
+        s = str(list(d))
 
         s = s.replace(")," ,"\n")
         s = s.replace(" (", "")
@@ -169,6 +180,6 @@ def main(list_paths, datasets_names_list, output1, output2):
         
 
 if __name__ == "__main__":
-    paths = glob("datasets-classified/*.csv")
+    paths = sorted(glob("datasets-classified/*.csv"))
     names = [path.replace("datasets-classified/", "").replace(".csv", "") for path in paths]
-    main(paths, names, "output1", "output2")
+    main(paths, names, "output1/", "output2/")

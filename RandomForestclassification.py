@@ -1,13 +1,24 @@
+from glob import glob
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
 
 def PreProcessing(X):
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-    return X_scaled
+    numeric_features = X.select_dtypes(include=['int64', 'float64']).columns
+    categorical_features = X.select_dtypes(include=['object']).columns
 
-def CreateClassifications(path,dataSet_name, output_path ):
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('num', StandardScaler(), numeric_features),
+            ('cat', OneHotEncoder(), categorical_features)
+        ])
+
+    X_processed = preprocessor.fit_transform(X)
+    return X_processed
+
+def CreateClassifications(path: str, output_path):
     """Gets a dataset, and uses random forest to classify the instances. 
        Then, each instance is associated with some leaf. 
        These associations are written to file, which its location is output_path.
@@ -27,9 +38,12 @@ def CreateClassifications(path,dataSet_name, output_path ):
     list
         a list of strings used that are the header columns
     """
-    df = pd.read_csv(path, header=None)
+    if path.endswith("csv"):
+        df = pd.read_csv(path)
+    elif path.endswith("dat"):
+        df = pd.read_table(path)
     df = df.dropna(axis=1, how='all')
-    features = df.columns[0: len(df.columns) -1]
+    features = df.columns[1: len(df.columns) -1]
     X = df[features] 
     target_col = df.columns[len(df.columns) -1]
     Y = df[target_col]
@@ -46,3 +60,9 @@ def CreateClassifications(path,dataSet_name, output_path ):
     result = pd.DataFrame(result)
     
     result.to_csv(output_path, index=False, header=False)
+
+
+if __name__ == "__main__":
+    datasets = glob("AutoIRAD-datasets/*.*")
+    for dataset in datasets:
+        CreateClassifications(dataset, dataset.replace(".dat", ".csv").replace("AutoIRAD-datasets", "datasets-classified"))

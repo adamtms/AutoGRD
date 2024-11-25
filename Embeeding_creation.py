@@ -163,7 +163,7 @@ class MatrixReader(multiprocessing.Process):
 			try:
 				ndumpName = self.work_queue.get_nowait()
 				
-				signatures = readSignatures('{0}.ndump2'.format(ndumpName))
+				signatures = readSignatures('{0}.in.ndump2'.format(ndumpName))
 				formatted = formatSignatures(signatures, self.testMode)				
 				correlMat = computeCorrelMat(formatted)
 								
@@ -284,22 +284,13 @@ def computeCorrelDist(corrMats, outputName, from_folder, to_path):
 	
 	# Put the jobs to be consumed
 	totalJobCount = len(corrMats) * (len(corrMats) - 1) / 2
-	matList = corrMats.keys()
-	matValList = [corrMats[mat] for mat in matList]
 	counter = 0
-	for i in corrMats:
-		numpy.savetxt(to_path + ".csv", corrMats[i], delimiter=",")
-		print(str(list(matList)[counter]))
+	for key, value in corrMats.items():
+		numpy.savetxt(key.replace("orca", "embedding") + ".csv", value, delimiter=",")
+		print(str(list(key)))
 		counter = counter + 1
 	pairCount = 0
-	for i in range(len(matValList) - 1):
-		corrMat1 = matValList[i]
-		
-		for j in range(i+1, len(matValList)):
-			corrMat2 = matValList[j]
-			
-			pair_queue.put((i, j, corrMat1, corrMat2))
-			pairCount += 1
+	return
 	
 	# Consume the results of completed computation
 	distances = [[0] * len(corrMats) for i in range(len(corrMats))]
@@ -401,7 +392,7 @@ class GraphletCountGetter(multiprocessing.Process):
 			try:
 				ndumpName = self.work_queue.get_nowait()
 				
-				signatures = readSignatures('{0}.ndump2'.format(ndumpName))
+				signatures = readSignatures('{0}.in.ndump2'.format(ndumpName))
 			
 				if self.mode == 1:
 					counts = getGraphletFreq(signatures)
@@ -1143,8 +1134,8 @@ def searchFolder(ndumpFolder, testMode):
 		path = file[0]
 		
 		for fileName in file[2]:
-			if fileName.endswith('.ndump2'):
-				stripName = fileName.rsplit('.', 1)[0]
+			if fileName.endswith('.in.ndump2'):
+				stripName = fileName.split('.')[0]
 				indexName = os.path.join(path, stripName)
 				
 				# Read networks for tests 4, 5, 6
@@ -1154,7 +1145,6 @@ def searchFolder(ndumpFolder, testMode):
 					exit(0)
 				
 				allIndexes.append(indexName)
-				
 	return allIndexes
 	
 """
@@ -1182,11 +1172,10 @@ def main(from_folder, to_path):
 	distType ='gcd15'
 	num_processes = 1
 	# Due to backward compatibility, map the distance type to corresponding testMode
-	testMode  		= checkInput(ndumpFolder, distType, num_processes) 
+	testMode = checkInput(ndumpFolder, distType, num_processes) 
 	
 	# Identify the files based on the 'ndump2' extensions	
-	allIndexes  	= searchFolder(ndumpFolder, testMode)
-	
+	allIndexes = searchFolder(ndumpFolder, testMode)
 	
 	# Compute the graphlet correlation distance (whatever type it is)
 	if testMode in [7, 10, 14, 16]:
@@ -1233,3 +1222,5 @@ def main(from_folder, to_path):
 		compareNetworkProps(diameters, 2, os.path.join(ndumpFolder, 'diameter.txt'))
 
 
+if __name__ == "__main__":
+	main('./orca/', "./embedding/")

@@ -1,0 +1,8 @@
+datasets
+embedding
+gw_files
+in_files
+orca
+trees
+.DS_Store
+__pycache__

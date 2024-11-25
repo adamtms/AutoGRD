@@ -1,3 +1,4 @@
+from glob import glob
 import subprocess
 
 def createStructureFiles(path_from, path_to):
@@ -30,6 +31,14 @@ def OperateOrca(path_from, path_to_ndump2):
          path to the location of the file, where the results of the orca algorithm will be saved. The filename extenstion of the 
          output file will be .ndump2
     """
-    
-    subprocess.call("orca.exe node 4 "+ path_from + ' '+ path_to_ndump2+".ndump2")
+    subprocess.run(["./orca.exe" , "4", path_from, path_to_ndump2+".ndump2"])
      
+
+# remember to add mushroom R
+if __name__ == "__main__":
+    files = sorted(glob("output2/*.in"))
+    files = [file for file in files if file == "output2/oocytes_merluccius_states_2f_R.in"]
+    outputs = [x.replace("output2", "orca") for x in files]
+    for file, output in zip(files, outputs):
+        print(file)
+        OperateOrca(file, output)
