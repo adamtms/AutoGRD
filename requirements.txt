@@ -1,0 +1,6 @@
+pandas
+scipy
+numpy
+decorify
+scikit-learn
+xgboost

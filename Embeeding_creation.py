@@ -81,7 +81,6 @@ import os
 import math
 import numpy
 import time
-import networkx as nx
 import multiprocessing, queue
 
 from scipy import stats
