@@ -60,9 +60,3 @@ def CreateClassifications(path: str, output_path):
     result = pd.DataFrame(result)
     
     result.to_csv(output_path, index=False, header=False)
-
-
-if __name__ == "__main__":
-    datasets = glob("AutoIRAD-datasets/*.*")
-    for dataset in datasets:
-        CreateClassifications(dataset, dataset.replace(".dat", ".csv").replace("AutoIRAD-datasets", "datasets-classified"))

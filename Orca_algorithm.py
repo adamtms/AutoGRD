@@ -37,7 +37,6 @@ def OperateOrca(path_from, path_to_ndump2):
 # remember to add mushroom R
 if __name__ == "__main__":
     files = sorted(glob("output2/*.in"))
-    files = [file for file in files if file == "output2/oocytes_merluccius_states_2f_R.in"]
     outputs = [x.replace("output2", "orca") for x in files]
     for file, output in zip(files, outputs):
         print(file)

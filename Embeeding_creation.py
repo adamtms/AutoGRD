@@ -287,7 +287,6 @@ def computeCorrelDist(corrMats, outputName, from_folder, to_path):
 	counter = 0
 	for key, value in corrMats.items():
 		numpy.savetxt(key.replace("orca", "embedding") + ".csv", value, delimiter=",")
-		print(str(list(key)))
 		counter = counter + 1
 	pairCount = 0
 	return
@@ -1176,7 +1175,7 @@ def main(from_folder, to_path):
 	
 	# Identify the files based on the 'ndump2' extensions	
 	allIndexes = searchFolder(ndumpFolder, testMode)
-	
+
 	# Compute the graphlet correlation distance (whatever type it is)
 	if testMode in [7, 10, 14, 16]:
 		corrMats = getCorrelationMatrices(allIndexes, testMode)
